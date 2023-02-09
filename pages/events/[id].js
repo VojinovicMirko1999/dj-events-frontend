@@ -5,9 +5,28 @@ import Link from "next/link";
 import Image from "next/image";
 import { FaPencilAlt, FaTimes } from "react-icons/fa";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useRouter } from "next/router";
+import { useState } from "react";
+
 export default function Event({ evt }) {
-  const deleteEvent = () => {
-    console.log("Delete");
+  const router = useRouter();
+
+  const deleteEvent = async () => {
+    if (confirm("Are you sure?")) {
+      const res = await fetch(`${API_URL}/eventss/${evt.id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.message);
+      } else {
+        router.push("/events");
+      }
+    }
   };
 
   return (
@@ -26,11 +45,12 @@ export default function Event({ evt }) {
           {new Date(evt.attributes.date).toLocaleDateString("en-US")} at{" "}
           {evt.attributes.time}
         </span>
+        <ToastContainer />
         <h1>{evt.attributes.name}</h1>
-        {evt.attributes.image && (
+        {evt.attributes.image.data && (
           <div className={styles.image}>
             <Image
-              src={evt.attributes.image}
+              src={evt.attributes.image.data.attributes.formats.medium.url}
               width={960}
               height={600}
               alt="Event image"
@@ -53,43 +73,42 @@ export default function Event({ evt }) {
   );
 }
 
-export async function getServerSideProps({ query: { id } }) {
-  const res = await fetch(`${API_URL}/eventss/${id}`);
+// export async function getServerSideProps({ query: { id } }) {
+//   const res = await fetch(`${API_URL}/eventss/${id}`);
+//   const events = await res.json();
+
+//   console.log(events);
+
+//   return {
+//     props: { evt: events.data },
+//   };
+// }
+
+export async function getStaticPaths() {
+  const res = await fetch(`${API_URL}/eventss`);
   const events = await res.json();
 
-  console.log(events);
+  const paths = events.data.map((evt) => ({
+    params: { id: evt.id.toString() },
+  }));
 
   return {
-    props: { evt: events.data },
+    paths,
+    fallback: true,
   };
 }
 
-// export async function getStaticPaths() {
-//   const res = await fetch(`${API_URL}/eventss`);
-//   const events = await res.json();
+export async function getStaticProps(paths) {
+  // or we can write instead of paths : { params : { slug }}
+  const res = await fetch(
+    `${API_URL}/eventss/${paths.params.id}?populate=image`
+  ); // if we write { params : { slug } } in parameter of function, we can us just slug
+  const events = await res.json();
 
-//   const paths = events.data.map((evt) => ({
-//     params: { slug: evt.slug },
-//   }));
-
-//   console.log(paths);
-
-//   return {
-//     paths,
-//     fallback: true,
-//   };
-// }
-
-// export async function getStaticProps(paths) {
-//   // or we can write instead of paths : { params : { slug }}
-//   console.log(paths);
-//   const res = await fetch(`${API_URL}/api/eventss/${paths.params.slug}`); // if we write { params : { slug } } in parameter of function, we can us just slug
-//   const events = await res.json();
-
-//   return {
-//     props: { evt: events[0] },
-//     revalidate: 1,
-//   };
-// }
+  return {
+    props: { evt: events.data },
+    revalidate: 1,
+  };
+}
 
 // slug is optional name, but here in these 2 methods, if we named it as a slug, we need to named it exactly

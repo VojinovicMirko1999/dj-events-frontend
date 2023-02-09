@@ -1,3 +1,4 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React from "react";
 import Layout from "@/components/Layout";
 import { useState } from "react";
@@ -7,17 +8,32 @@ import { API_URL } from "@/config/index";
 import styles from "@/styles/Form.module.css";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import moment from "moment/moment";
+import Image from "next/image";
+import { FaImage } from "react-icons/fa";
+import Modal from "@/components/Modal";
+import ImageUpload from "@/components/ImageUpload";
 
-export default function AddEventPage() {
+export default function EditEventPage({ evt }) {
   const [values, setValues] = useState({
-    name: "",
-    performers: "",
-    venue: "",
-    address: "",
-    date: "",
-    time: "",
-    description: "",
+    name: evt.attributes.name,
+    performers: evt.attributes.performers,
+    venue: evt.attributes.venue,
+    address: evt.attributes.address,
+    date: evt.attributes.date,
+    time: evt.attributes.time,
+    description: evt.attributes.description,
   });
+
+  const [imagePreview, setImagePreview] = useState(
+    evt.attributes.image.data
+      ? evt.attributes.image.data.attributes.formats.thumbnail.url
+      : null
+  );
+
+  const [showModal, setShowModal] = useState(false);
+
+  console.log(imagePreview);
 
   const router = useRouter();
 
@@ -34,8 +50,8 @@ export default function AddEventPage() {
       return;
     }
 
-    const res = await fetch(`${API_URL}/eventss`, {
-      method: "POST",
+    const res = await fetch(`${API_URL}/eventss/${evt.id}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
@@ -57,10 +73,19 @@ export default function AddEventPage() {
     setValues({ ...values, [name]: value });
   };
 
+  const imageUploaded = async () => {
+    const res = await fetch(`${API_URL}/eventss/${evt.id}?populate=image`);
+    const data = await res.json();
+
+    setImagePreview(evt.attributes.image.data.attributes.formats.thumbnail.url);
+
+    setShowModal(false);
+  };
+
   return (
     <Layout title="Add New Event">
       <Link href="/events">Go Back</Link>
-      <h1>Add Event</h1>
+      <h1>Edit Event</h1>
       <ToastContainer />
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.grid}>
@@ -110,7 +135,7 @@ export default function AddEventPage() {
               type="date"
               name="date"
               id="date"
-              value={values.date}
+              value={moment(values.date).format("yyyy-MM-DD")}
               onChange={handleInputChange}
             />
           </div>
@@ -137,8 +162,41 @@ export default function AddEventPage() {
           ></textarea>
         </div>
 
-        <input type="submit" value="Add Event" className="btn" />
+        <input type="submit" value="Edit Event" className="btn" />
       </form>
+
+      <h2>Event Image</h2>
+      {imagePreview ? (
+        <Image src={imagePreview} height={100} width={170} alt="Event Image" />
+      ) : (
+        <div>
+          <p>No image uploaded</p>
+        </div>
+      )}
+
+      <div>
+        <button onClick={() => setShowModal(true)} className="btn-secondary">
+          <FaImage /> Set Image
+        </button>
+      </div>
+
+      <Modal show={showModal} onClose={() => setShowModal(false)}>
+        <ImageUpload evtId={evt.id} imageUploaded={imageUploaded} />
+      </Modal>
     </Layout>
   );
+}
+
+export async function getServerSideProps({ params: { id } }) {
+  const res = await fetch(`${API_URL}/eventss/${id}?populate=image`);
+
+  const evt = await res.json();
+
+  console.log(evt);
+
+  return {
+    props: {
+      evt: evt.data,
+    },
+  };
 }
