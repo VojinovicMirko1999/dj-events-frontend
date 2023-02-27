@@ -31,11 +31,12 @@ export default function HomePage({ events }) {
 //   };
 // }
 
-export async function getServerSideProps() {
+export async function getStaticProps() {
   const res = await fetch(`${API_URL}/eventss?populate=image`);
   const events = await res.json();
 
   return {
     props: { events: events.data },
+    revalidate: 1,
   };
 }
