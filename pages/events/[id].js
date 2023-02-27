@@ -73,42 +73,42 @@ export default function Event({ evt }) {
   );
 }
 
-// export async function getServerSideProps({ query: { id } }) {
-//   const res = await fetch(`${API_URL}/eventss/${id}`);
-//   const events = await res.json();
-
-//   console.log(events);
-
-//   return {
-//     props: { evt: events.data },
-//   };
-// }
-
-export async function getStaticPaths() {
-  const res = await fetch(`${API_URL}/eventss`);
+export async function getServerSideProps({ query: { id } }) {
+  const res = await fetch(`${API_URL}/eventss/${id}`);
   const events = await res.json();
 
-  const paths = events.data.map((evt) => ({
-    params: { id: evt.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: true,
-  };
-}
-
-export async function getStaticProps(paths) {
-  // or we can write instead of paths : { params : { slug }}
-  const res = await fetch(
-    `${API_URL}/eventss/${paths.params.id}?populate=image`
-  ); // if we write { params : { slug } } in parameter of function, we can us just slug
-  const events = await res.json();
+  console.log(events);
 
   return {
     props: { evt: events.data },
-    revalidate: 1,
   };
 }
+
+// export async function getStaticPaths() {
+//   const res = await fetch(`${API_URL}/eventss`);
+//   const events = await res.json();
+
+//   const paths = events.data.map((evt) => ({
+//     params: { id: evt.id.toString() },
+//   }));
+
+//   return {
+//     paths,
+//     fallback: true,
+//   };
+// }
+
+// export async function getStaticProps(paths) {
+//   // or we can write instead of paths : { params : { slug }}
+//   const res = await fetch(
+//     `${API_URL}/eventss/${paths.params.id}?populate=image`
+//   ); // if we write { params : { slug } } in parameter of function, we can us just slug
+//   const events = await res.json();
+
+//   return {
+//     props: { evt: events.data },
+//     revalidate: 1,
+//   };
+// }
 
 // slug is optional name, but here in these 2 methods, if we named it as a slug, we need to named it exactly
