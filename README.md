@@ -1,1 +1,1 @@
-# dj-events-frontend
+# Frontend app from NextJS Course.
