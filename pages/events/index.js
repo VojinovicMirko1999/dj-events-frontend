@@ -41,7 +41,7 @@ export default function EventsPage({ events, page, total }) {
 //   };
 // }
 
-export async function getServerSideProps({ query: { page = 1 } }) {
+export async function getServerSideProps({ query: { page = 1 }, req }) {
   // Calculate start page
   const start = +page === 1 ? 0 : (+page - 1) * PER_PAGE;
 

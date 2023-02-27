@@ -4,20 +4,24 @@ import cookie from "cookie";
 
 export default async (req, res) => {
   if (req.method === "POST") {
-    const { identifier, password } = req.body;
-
-    const strapiRes = await fetch(`${API_URL}/auth/local`, {
+    const { user } = req.body;
+    const { username, password, email } = user;
+    const strapiRes = await fetch(`${API_URL}/auth/local/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        identifier,
+        username,
+        email,
         password,
       }),
     });
 
     const data = await strapiRes.json();
+
+    console.log({ username, email, password });
+    console.log(data.error);
 
     if (strapiRes.ok) {
       res.setHeader(

@@ -187,12 +187,11 @@ export default function EditEventPage({ evt }) {
   );
 }
 
-export async function getServerSideProps({ params: { id } }) {
+export async function getServerSideProps({ params: { id }, req }) {
   const res = await fetch(`${API_URL}/eventss/${id}?populate=image`);
-
   const evt = await res.json();
 
-  console.log(evt);
+  console.log(req.headers.cookie.token);
 
   return {
     props: {

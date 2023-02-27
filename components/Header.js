@@ -28,7 +28,7 @@ export default function Header() {
                 <Link href="/events/add">Add Event</Link>
               </li>
               <li>
-                <Link href="/account/add">Dashboard</Link>
+                <Link href="/account/dashboard">Dashboard</Link>
               </li>
               <li>
                 <button
