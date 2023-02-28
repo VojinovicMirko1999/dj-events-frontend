@@ -7,13 +7,11 @@ export default function HomePage({ events }) {
   return (
     <Layout>
       <h1>Upcoming Events</h1>
-      {events.length === 0 && <h3>No events to show</h3>}
+      {events && events.length === 0 && <h3>No events to show</h3>}
 
-      {events.map((evt) => (
-        <EventItem key={evt.id} evt={evt} />
-      ))}
+      {events && events.map((evt) => <EventItem key={evt.id} evt={evt} />)}
 
-      {events.length > 0 && (
+      {events && events.length > 0 && (
         <Link className="btn-secondary" href="/events">
           View All Events
         </Link>
